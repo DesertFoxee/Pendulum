@@ -1,5 +1,8 @@
 #include "Pendulum.h"
 
+
+Vector2D Pendulum::gra = Vector2D(0, 0.1f);
+
 Pendulum::Pendulum(float x, float y, float arm ,float b_radius )
 {
 	this->origin = Vector2D(x, y);
@@ -63,6 +66,18 @@ void Pendulum::update()
 	
 }
 
+
+void Pendulum::resetState()
+{
+	this->apply = true;
+	this->aAcc = 0;
+	this->aVec = 0;
+	obj.vec.reset();
+	obj.acc.reset();
+	this->angle = 90 - Convert::RadiusToDegree((obj.loc - origin).angle());
+}
+
+
 void Pendulum::process(sf::RenderWindow& window)
 {
 
@@ -89,14 +104,14 @@ void Pendulum::process(sf::RenderWindow& window)
 		}
 		// free fall 
 		else if (mt_arm < arm) {
-			obj.loc += Vector2D(0, 0.1f);
+			obj.acc = Pendulum::gra / obj.mass;
+			obj.vec += obj.acc;
+			obj.loc += obj.vec;
 		}
-		else {
-			this->aAcc = 0;
-			this->aVec = 0;
-			// because : angle with x ; (horizotal)
-			this->angle = 90 - Convert::RadiusToDegree((obj.loc - origin).angle());
-		}
+
+		// check out state 
+		if ((obj.loc - origin).mag() >= arm)
+			resetState();
 		
 	}
 		
@@ -105,3 +120,4 @@ void Pendulum::process(sf::RenderWindow& window)
 
 	
 }
+
